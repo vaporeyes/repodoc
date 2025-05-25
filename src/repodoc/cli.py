@@ -92,7 +92,7 @@ async def _generate_docs(
         await client.close()
 
 
-@app.command()
+@app.command(name="generate")
 def generate(
     repo_path: Path = typer.Argument(
         ...,

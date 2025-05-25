@@ -133,7 +133,7 @@ def test_cli_verbose(runner: CliRunner, tmp_path: Path) -> None:
 
     with patch("repodoc.cli._generate_docs") as mock_generate:
         # Use absolute path to avoid any path resolution issues
-        result = runner.invoke(app, [str(repo_path.absolute()), "-v"])
+        result = runner.invoke(app, ["generate", str(repo_path.absolute()), "-v"])
         print(result.output)
         assert result.exit_code == 0
         mock_generate.assert_called_once()

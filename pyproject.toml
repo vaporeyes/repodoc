@@ -59,6 +59,11 @@ exclude_lines = [
     "@(abc\\.)?abstractmethod",
 ]
 
+[dependency-groups]
+dev = [
+    "respx>=0.22.0",
+]
+
 [project.optional-dependencies]
 dev = [
     "black>=24.1.1",

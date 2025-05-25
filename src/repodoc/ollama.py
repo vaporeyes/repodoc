@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import httpx
 from typing import Optional
 
@@ -17,12 +18,14 @@ class OllamaClient:
         client: HTTP client for making requests.
     """
 
-    def __init__(self, url: str = "http://localhost:11434", model: str = "llama2") -> None:
+    def __init__(
+        self, url: str = "http://localhost:11434", model: str = "devstral"
+    ) -> None:
         """Initialize the client.
 
         Args:
             url: Base URL for Ollama API (e.g., "http://localhost:11434").
-            model: Name of the model to use (e.g., "llama2").
+            model: Name of the model to use (e.g., "devstral").
         """
         self.base_url = url.rstrip("/")
         self.model = model
@@ -60,17 +63,35 @@ class OllamaClient:
             OllamaError: If generation fails.
         """
         try:
+            json_data = {
+                "model": self.model,
+                "prompt": prompt,
+                "temperature": temperature,
+            }
+            headers = {
+                "Content-Type": "application/json",
+            }
+
             response = await self._client.post(
                 f"{self.base_url}/api/generate",
-                json={
-                    "model": self.model,
-                    "prompt": prompt,
-                    "temperature": temperature,
-                },
+                headers=headers,
+                json=json_data,
                 timeout=30.0,  # 30 second timeout for generation
             )
             response.raise_for_status()
-            return response.json()["response"]
+            
+            # Ollama returns a stream of JSON objects, one per line
+            full_response = ""
+            async for line in response.aiter_lines():
+                if line.strip():
+                    try:
+                        chunk = json.loads(line)
+                        if "response" in chunk:
+                            full_response += chunk["response"]
+                    except json.JSONDecodeError as e:
+                        raise OllamaError(f"Failed to parse Ollama response: {e}")
+            
+            return full_response
         except httpx.TimeoutException:
             raise OllamaError("Generation timed out")
         except httpx.RequestError as e:

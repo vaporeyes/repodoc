@@ -175,7 +175,7 @@ Provide updated code & tests only.
 
 ---
 
-Step 4.1 – Implement FileChunker.
+### Step 4.1 – Implement FileChunker
 
 Goal  
 Read any text file (the repomix XML) and yield “prompt-sized” chunks that keep each chunk under
@@ -207,7 +207,7 @@ def iter_chunks(path: Path, *, max_tokens: int = 16_000) -> Iterator[str]:
 
 ---
 
-Step 5.1 – Define error hierarchy and standardized exit codes.
+### Step 5.1 – Define error hierarchy and standardized exit codes
 
 Context  
 
@@ -335,56 +335,7 @@ Requirements
 
 ---
 
-### Prompt 11.1 – Writer & File System
-
-```text
-Step 11.1 – Write markdown files safely.
-
-Create *src/repodoc/writer.py* exposing `write(doc: str, kind: str, out_dir: Path) -> Path` that:
-
-- Ensures `out_dir` exists (`mkdir(parents=True, exist_ok=True)`).
-- Maps `kind` → filename: `api`→api-docs.md, `manual`→user-manual.md, `architecture`→architecture.md.
-- Writes UTF-8, newline `\n`, and returns Path.
-- If file exists, overwrite.
-- Raises `OutputDirError` if cannot create dir.
-
-Tests using tempfile ensure file is written and re-written.
-```
-
----
-
-### Prompt 12.1 – Progress & Verbose
-
-```text
-Step 12.1 – Wire progress indicator & verbose logging.
-
-Requirements:
-1. Add `--verbose / -v` global Typer option setting log level to DEBUG, else INFO. Use `logging` + `rich.console.Console` for colour.
-2. Add `Progress` object from `rich.progress` to wrap generator loop:
-```
-
-for kind, gen\_cls in selected\_generators:
-task = progress.add\_task(kind, total=None)
-...
-progress.update(task, advance=1, description=f"{kind} done")
-
-```
-3. Update CLI `generate` command to:
-- Validate input file & flags
-- Load config
-- Health-check Ollama
-- Parse repomix
-- Iterate generators → writer
-- Exit correct codes on failure
-
-Write integration test with mocked Ollama returning True.
-
-Keep diff small: modify only cli.py and add progress.py helper if useful.
-```
-
----
-
-### Prompt 13.1 – End-to-End Happy Path
+### Prompt 11.1 – End-to-End Happy Path
 
 ```text
 Step 13.1 – End-to-end test.
@@ -399,10 +350,6 @@ In *tests/e2e/test_full_flow.py*:
 
 Use subprocess/runpy or Typer CliRunner as you prefer.
 ```
-
----
-
-*(Continue similar prompts for failure paths & release automation as needed.)*
 
 ---
 

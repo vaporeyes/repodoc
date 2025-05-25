@@ -49,6 +49,7 @@ def run_repomix(
 
     cmd = [
         "npx",
+        "--yes",
         "repomix",
         str(repo_path),
         "-o",
