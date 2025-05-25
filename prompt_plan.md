@@ -175,30 +175,60 @@ Provide updated code & tests only.
 
 ---
 
-### Prompt 4.1 – Repomix Parser Skeleton
+Step 4.1 – Implement FileChunker.
 
-```text
-Step 4.1 – Implement repomix file parser (read-only).
+Goal  
+Read any text file (the repomix XML) and yield “prompt-sized” chunks that keep each chunk under
+`max_tokens` (default: 16 000) using a 4-chars≈1-token heuristic.
 
-Assumptions:
-- Repomix file is plain text blocks separated by `---` lines
-  with a YAML header giving `name` and `language` keys.
+Files  
+*src/repodoc/chunker.py*
 
-Tasks:
-1. *src/repodoc/parser.py*
-   - Define dataclass `Snippet` with `name`, `language`, `content`.
-   - Function `parse(path: Path) -> list[Snippet]`
-     - Validate file exists else raise `InputFileError`.
-     - Parse blocks, strip whitespace.
+```python
+from pathlib import Path
+from typing import Iterable, Iterator
 
-2. Write tests with fixtures:
-   - valid file yields correct snippet list length & attributes
-   - invalid (missing header key) raises `InputFileError`
-
-3. Do **not** integrate with CLI yet.
-
-Return code & tests only.
+def iter_chunks(path: Path, *, max_tokens: int = 16_000) -> Iterator[str]:
+    max_chars = max_tokens * 4
+    buf: list[str] = []
+    length = 0
+    with path.open("r", encoding="utf-8") as fh:
+        for line in fh:
+            buf.append(line)
+            length += len(line)
+            if length >= max_chars:
+                yield "".join(buf)
+                buf.clear()
+                length = 0
+    if buf:
+        yield "".join(buf)
+...
 ```
+
+---
+
+Step 5.1 – Define error hierarchy and standardized exit codes.
+
+Context  
+
+* Steps 1-4 are done (CLI baseline, config loader WIP).  
+* We need a single place for every fail-fast / continue-on error to live.
+
+Tasks
+
+1. **Create *src/repodoc/errors.py***  
+
+   ```python
+   from enum import IntEnum
+
+   class ExitCode(IntEnum):
+       SUCCESS = 0          # normal termination
+       GENERAL = 1          # unexpected runtime error
+       CONFIG = 2           # configuration file / flag issues
+       INPUT_FILE = 3       # missing or invalid --input file
+       OLLAMA = 4           # cannot reach Ollama server / bad model
+       OUTPUT_DIR = 5       # unable to create / write output dir
+
 
 ---
 

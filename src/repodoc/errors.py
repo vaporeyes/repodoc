@@ -37,4 +37,16 @@ class ConfigurationError(RepodocError):
         Args:
             message: Error message.
         """
-        super().__init__(message, ExitCode.CONFIGURATION_ERROR) 
+        super().__init__(message, ExitCode.CONFIGURATION_ERROR)
+
+
+class InputFileError(RepodocError):
+    """Input file-related error."""
+
+    def __init__(self, message: str) -> None:
+        """Initialize error.
+
+        Args:
+            message: Error message.
+        """
+        super().__init__(message, ExitCode.INPUT_FILE_ERROR) 
