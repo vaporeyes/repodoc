@@ -42,6 +42,7 @@ def test_run_repomix_success_markdown(mock_repo: Path) -> None:
             mock_run.assert_called_once_with(
                 [
                     "npx",
+                    "--yes",
                     "repomix",
                     str(mock_repo),
                     "-o",
@@ -71,6 +72,7 @@ def test_run_repomix_success_xml(mock_repo: Path) -> None:
             mock_run.assert_called_once_with(
                 [
                     "npx",
+                    "--yes",
                     "repomix",
                     str(mock_repo),
                     "-o",
@@ -100,6 +102,7 @@ def test_run_repomix_success_text(mock_repo: Path) -> None:
             mock_run.assert_called_once_with(
                 [
                     "npx",
+                    "--yes",
                     "repomix",
                     str(mock_repo),
                     "-o",
@@ -129,6 +132,7 @@ def test_run_repomix_with_compression(mock_repo: Path) -> None:
             mock_run.assert_called_once_with(
                 [
                     "npx",
+                    "--yes",
                     "repomix",
                     str(mock_repo),
                     "-o",

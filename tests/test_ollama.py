@@ -33,17 +33,6 @@ async def test_healthcheck_success(client: OllamaClient, respx_mock: respx.MockR
 
 
 @pytest.mark.asyncio
-async def test_generate_not_implemented(client: OllamaClient) -> None:
-    """Test that generate is not yet implemented.
-
-    Args:
-        client: Ollama client fixture.
-    """
-    with pytest.raises(NotImplementedError, match="Text generation not yet implemented"):
-        await client.generate("test prompt")
-
-
-@pytest.mark.asyncio
 async def test_client_close(client: OllamaClient) -> None:
     """Test client close method.
 

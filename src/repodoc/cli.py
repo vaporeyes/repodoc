@@ -27,7 +27,7 @@ async def _generate_docs(
     output_dir: Path,
     verbose: bool,
 ) -> None:
-    """Generate documentation for a Git repository.
+    """Generate documentation from Git repositories using Ollama.
 
     Args:
         repo_path: Path to Git repository to document.
@@ -117,7 +117,7 @@ def generate(
         help="Enable verbose logging.",
     ),
 ) -> None:
-    """Generate documentation for a Git repository."""
+    """Generate documentation from Git repositories using Ollama."""
     asyncio.run(_generate_docs(repo_path, output_dir, verbose))
 
 

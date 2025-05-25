@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+import typer
 from typer.testing import CliRunner
 
 from repodoc.cli import app, _generate_docs
@@ -99,7 +100,7 @@ async def test_generate_docs_error(tmp_path: Path, mock_console: MagicMock) -> N
          patch("repodoc.cli.setup_logging", return_value=mock_console), \
          patch("repodoc.cli.Confirm.ask", return_value=False):
         
-        with pytest.raises(SystemExit):
+        with pytest.raises(typer.Exit):  # Changed from SystemExit
             await _generate_docs(repo_path, tmp_path / "docs", verbose=True)
 
 
@@ -133,7 +134,7 @@ def test_cli_verbose(runner: CliRunner, tmp_path: Path) -> None:
 
     with patch("repodoc.cli._generate_docs") as mock_generate:
         # Use absolute path to avoid any path resolution issues
-        result = runner.invoke(app, ["generate", str(repo_path.absolute()), "-v"])
+        result = runner.invoke(app, [str(repo_path.absolute()), "-v"])
         print(result.output)
         assert result.exit_code == 0
         mock_generate.assert_called_once()
