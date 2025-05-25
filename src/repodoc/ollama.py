@@ -57,9 +57,24 @@ class OllamaClient:
             Generated text.
 
         Raises:
-            NotImplementedError: This method is not yet implemented.
+            OllamaError: If generation fails.
         """
-        raise NotImplementedError("Text generation not yet implemented")
+        try:
+            response = await self._client.post(
+                f"{self.base_url}/api/generate",
+                json={
+                    "model": self.model,
+                    "prompt": prompt,
+                    "temperature": temperature,
+                },
+                timeout=30.0,  # 30 second timeout for generation
+            )
+            response.raise_for_status()
+            return response.json()["response"]
+        except httpx.TimeoutException:
+            raise OllamaError("Generation timed out")
+        except httpx.RequestError as e:
+            raise OllamaError(f"Failed to generate text: {str(e)}")
 
     async def close(self) -> None:
         """Close the HTTP client."""
