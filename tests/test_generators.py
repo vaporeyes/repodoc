@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, patch
 from repodoc.generators.base import DocGenerator, get_generator, register
 from repodoc.generators.api import ApiGenerator, build_prompt as build_api_prompt
 from repodoc.generators.manual import ManualGenerator, build_prompt as build_manual_prompt
+from repodoc.generators.architecture import ArchitectureGenerator, build_prompt as build_architecture_prompt
 from repodoc.ollama import OllamaClient
 
 
@@ -13,6 +14,7 @@ def test_generator_registry() -> None:
     """Test that generators are properly registered."""
     assert get_generator("api") is ApiGenerator
     assert get_generator("manual") is ManualGenerator
+    assert get_generator("architecture") is ArchitectureGenerator
 
 
 def test_build_api_prompt() -> None:
@@ -37,6 +39,20 @@ def test_build_manual_prompt() -> None:
     assert "def example(): pass" in prompt
     assert "Start with a level 2 header '## User Manual'" in prompt
     assert "### Getting Started" in prompt
+
+
+def test_build_architecture_prompt() -> None:
+    """Test architecture prompt building."""
+    project = "def example(): pass"
+    prompt = build_architecture_prompt(project)
+    assert "Please analyze the following code" in prompt
+    assert "Focus on:" in prompt
+    assert "High-level system overview" in prompt
+    assert "Component relationships" in prompt
+    assert "Mermaid diagrams" in prompt
+    assert "```mermaid" in prompt
+    assert "sequenceDiagram" in prompt
+    assert "Start with a level 2 header '## Architecture'" in prompt
 
 
 @pytest.mark.asyncio
@@ -79,6 +95,36 @@ async def test_manual_generator() -> None:
     assert "Please analyze the following code" in call_args
     assert "test project" in call_args
     assert "Getting started guide" in call_args
+
+
+@pytest.mark.asyncio
+async def test_architecture_generator() -> None:
+    """Test the architecture generator."""
+    generator = ArchitectureGenerator()
+    client = OllamaClient()
+    
+    # Mock the generate method to return a test response with a Mermaid diagram
+    client.generate = AsyncMock(return_value="""## Architecture
+System Overview
+
+```mermaid
+sequenceDiagram
+    participant A
+    participant B
+    A->>B: Hello
+```""")
+    
+    result = await generator.generate("test project", client)
+    assert result.startswith("## Architecture")
+    assert "```mermaid" in result
+    assert "sequenceDiagram" in result
+    
+    # Verify the client was called with the correct prompt
+    client.generate.assert_called_once()
+    call_args = client.generate.call_args[0][0]
+    assert "Please analyze the following code" in call_args
+    assert "test project" in call_args
+    assert "Mermaid diagrams" in call_args
 
 
 def test_duplicate_registration() -> None:
