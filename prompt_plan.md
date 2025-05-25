@@ -274,6 +274,67 @@ Focus on architecture, not content.
 
 ---
 
+### Step 8.1 – Implement ApiGenerator
+
+Context: `DocGenerator` base/registry already exist.
+
+Tasks
+
+1. In *src/repodoc/generators/api.py*
+   * Subclass `DocGenerator`.
+   * `generate(project, client)` should:
+        a. Build an English prompt focusing on public interfaces, function signatures, and data structures contained in `project`.
+        b. Call `await client.generate(prompt)` (for now streak to sync version with `asyncio.run()` if needed).
+        c. Return the markdown string from Ollama unchanged.
+2. Add helper `build_prompt(project)` pure-function for unit-testing.
+3. Tests in *tests/generators/test_api.py*
+   * Patch `OllamaClient.generate` to return `"## API\nContent"`.
+   * Assert returned doc starts with `## API`.
+
+---
+
+### Step 8.2 – Implement ManualGenerator
+
+1. *src/repodoc/generators/manual.py*
+   * Focus on usage patterns, getting-started, common workflows.
+2. Re-use template helper similar to ApiGenerator.
+3. Snapshot tests ensuring prompt contains the phrase “Step-by-step guide”.
+
+---
+
+### Step 8.3 – Implement ArchitectureGenerator
+
+1. *src/repodoc/generators/architecture.py*
+   * Produce a prompt that asks the LLM for a high-level overview plus Mermaid sequence/flow diagrams.
+2. When returned markdown contains triple-back-tick `mermaid`, leave as-is.
+3. Tests ensure at least one “```mermaid” block exists in output.
+
+---
+
+### Step 9.1 – Write markdown files safely
+
+Create *src/repodoc/writer.py* exposing `write(doc: str, kind: str, out_dir: Path) -> Path` that:
+
+* Ensures `out_dir` exists (`mkdir(parents=True, exist_ok=True)`).
+* Maps `kind` → filename: `api`→api-docs.md, `manual`→user-manual.md, `architecture`→architecture.md.
+* Writes UTF-8, newline `\n`, returns Path.
+* If file exists, overwrite atomically (tmp-file + rename).
+* Raises `OutputDirError` if dir cannot be created or is not writable.
+
+Tests using `tmp_path` verify file creation and overwrite.
+
+---
+
+### Step 10.1 – Wire progress indicator & verbose logging
+
+Requirements
+
+1. Add global `--verbose / -v` option in Typer that sets log level DEBUG; default INFO.
+2. Introduce `rich.console.Console` + `logging` RichHandler.
+3. Implement `rich.progress.Progress` in CLI `generate` loop:
+
+---
+
 ### Prompt 11.1 – Writer & File System
 
 ```text

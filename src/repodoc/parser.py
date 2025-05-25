@@ -1,16 +1,32 @@
 """Parser for repomix output."""
 
 import subprocess
+from enum import Enum
 from pathlib import Path
+from typing import Optional
 
 from repodoc.errors import InputFileError
 
 
-def run_repomix(repo_path: Path) -> Path:
+class OutputFormat(Enum):
+    """Output format for repomix."""
+
+    MARKDOWN = "markdown"
+    XML = "xml"
+    TEXT = "text"
+
+
+def run_repomix(
+    repo_path: Path,
+    format: OutputFormat = OutputFormat.MARKDOWN,
+    compress: bool = False,
+) -> Path:
     """Run repomix binary on a repository.
 
     Args:
         repo_path: Path to the Git repository.
+        format: Output format for repomix (markdown, xml, or text).
+        compress: Whether to compress the output.
 
     Returns:
         Path to the generated output file.
@@ -24,10 +40,28 @@ def run_repomix(repo_path: Path) -> Path:
     if not (repo_path / ".git").exists():
         raise InputFileError(f"Not a Git repository: {repo_path}")
 
-    output_path = repo_path / "repomix-output.txt"
+    extension = {
+        OutputFormat.MARKDOWN: ".md",
+        OutputFormat.XML: ".xml",
+        OutputFormat.TEXT: ".txt",
+    }[format]
+    output_path = repo_path / f"repomix-output{extension}"
+
+    cmd = [
+        "npx",
+        "repomix",
+        str(repo_path),
+        "-o",
+        str(output_path),
+        "--style",
+        format.value,
+    ]
+    if compress:
+        cmd.append("--compress")
+
     try:
         result = subprocess.run(
-            ["repomix", str(repo_path), "-o", str(output_path)],
+            cmd,
             capture_output=True,
             text=True,
             check=True,

@@ -1,9 +1,10 @@
 [project]
 name = "repodoc"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.13"
+description = "Generate documentation from Git repositories using Ollama."
+authors = [
+    { name = "John Smith", email = "john.smith@example.com" },
+]
 dependencies = [
     "httpx>=0.28.1",
     "lxml>=5.1.0",
@@ -11,16 +12,60 @@ dependencies = [
     "tomli>=2.2.1",
     "typer>=0.15.4",
 ]
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
 
 [project.scripts]
 repodoc = "repodoc.cli:app"
 
-[dependency-groups]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/repodoc"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = ["E", "F", "B", "I", "N", "UP", "PL", "RUF"]
+ignore = []
+
+[tool.ruff.isort]
+known-first-party = ["repodoc"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "pass",
+    "@(abc\\.)?abstractmethod",
+]
+
+[project.optional-dependencies]
 dev = [
-    "black>=25.1.0",
-    "mypy>=1.15.0",
-    "pre-commit>=4.2.0",
-    "pytest>=8.3.5",
-    "pytest-cov>=6.1.1",
-    "ruff>=0.11.11",
+    "black>=24.1.1",
+    "coverage>=7.4.1",
+    "mypy>=1.8.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.5",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.2.1",
 ]

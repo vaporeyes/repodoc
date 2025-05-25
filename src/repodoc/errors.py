@@ -1,52 +1,91 @@
-"""Error types for repodoc."""
+"""Error hierarchy and standardized exit codes."""
 
 from enum import IntEnum
+from typing import Optional
 
 
 class ExitCode(IntEnum):
-    """Exit codes for the CLI."""
+    """Standardized exit codes for the application.
 
-    SUCCESS = 0
-    GENERAL_ERROR = 1
-    CONFIGURATION_ERROR = 2
-    INPUT_FILE_ERROR = 3
-    OLLAMA_CONNECTION_ERROR = 4
-    OUTPUT_DIR_ERROR = 5
+    Attributes:
+        SUCCESS: Normal termination.
+        GENERAL: Unexpected runtime error.
+        CONFIG: Configuration file or flag issues.
+        INPUT_FILE: Missing or invalid input file.
+        OLLAMA: Cannot reach Ollama server or bad model.
+        OUTPUT_DIR: Unable to create or write output directory.
+    """
+
+    SUCCESS = 0  # normal termination
+    GENERAL = 1  # unexpected runtime error
+    CONFIG = 2  # configuration file / flag issues
+    INPUT_FILE = 3  # missing or invalid --input file
+    OLLAMA = 4  # cannot reach Ollama server / bad model
+    OUTPUT_DIR = 5  # unable to create / write output dir
 
 
-class RepodocError(Exception):
-    """Base exception for repodoc."""
+class RepoDocError(Exception):
+    """Base class for all repodoc errors.
 
-    def __init__(self, message: str, exit_code: ExitCode = ExitCode.GENERAL_ERROR) -> None:
-        """Initialize error.
+    Attributes:
+        exit_code: The standardized exit code for this error.
+        message: Optional error message.
+    """
+
+    def __init__(self, exit_code: ExitCode, message: Optional[str] = None) -> None:
+        """Initialize the error.
 
         Args:
-            message: Error message.
-            exit_code: Exit code to use when this error occurs.
+            exit_code: The standardized exit code.
+            message: Optional error message.
         """
-        super().__init__(message)
         self.exit_code = exit_code
+        super().__init__(message or self.__class__.__name__)
 
 
-class ConfigurationError(RepodocError):
-    """Configuration-related error."""
+class ConfigurationError(RepoDocError):
+    """Configuration file or flag issues."""
 
-    def __init__(self, message: str) -> None:
-        """Initialize error.
-
-        Args:
-            message: Error message.
-        """
-        super().__init__(message, ExitCode.CONFIGURATION_ERROR)
-
-
-class InputFileError(RepodocError):
-    """Input file-related error."""
-
-    def __init__(self, message: str) -> None:
-        """Initialize error.
+    def __init__(self, message: Optional[str] = None) -> None:
+        """Initialize the error.
 
         Args:
-            message: Error message.
+            message: Optional error message.
         """
-        super().__init__(message, ExitCode.INPUT_FILE_ERROR) 
+        super().__init__(ExitCode.CONFIG, message)
+
+
+class InputFileError(RepoDocError):
+    """Missing or invalid input file."""
+
+    def __init__(self, message: Optional[str] = None) -> None:
+        """Initialize the error.
+
+        Args:
+            message: Optional error message.
+        """
+        super().__init__(ExitCode.INPUT_FILE, message)
+
+
+class OllamaError(RepoDocError):
+    """Cannot reach Ollama server or bad model."""
+
+    def __init__(self, message: Optional[str] = None) -> None:
+        """Initialize the error.
+
+        Args:
+            message: Optional error message.
+        """
+        super().__init__(ExitCode.OLLAMA, message)
+
+
+class OutputDirectoryError(RepoDocError):
+    """Unable to create or write output directory."""
+
+    def __init__(self, message: Optional[str] = None) -> None:
+        """Initialize the error.
+
+        Args:
+            message: Optional error message.
+        """
+        super().__init__(ExitCode.OUTPUT_DIR, message) 
