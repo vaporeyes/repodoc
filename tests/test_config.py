@@ -9,6 +9,7 @@ import tomli
 
 from repodoc.config import Config, load
 from repodoc.errors import ConfigurationError
+from conftest import as_cwd
 
 
 @pytest.fixture
@@ -44,7 +45,7 @@ def test_config_file(config_file: Path) -> None:
     Args:
         config_file: Path to config file.
     """
-    with config_file.parent.as_cwd():
+    with as_cwd(config_file.parent):
         config = load()
         assert config.ollama_url == "http://localhost:11434"
         assert config.model == "codestral"
@@ -56,7 +57,7 @@ def test_env_override(config_file: Path) -> None:
     Args:
         config_file: Path to config file.
     """
-    with config_file.parent.as_cwd():
+    with as_cwd(config_file.parent):
         os.environ["REPODOC_OLLAMA_URL"] = "http://custom:11434"
         os.environ["REPODOC_MODEL"] = "custom-model"
         try:
@@ -74,7 +75,7 @@ def test_cli_override(config_file: Path) -> None:
     Args:
         config_file: Path to config file.
     """
-    with config_file.parent.as_cwd():
+    with as_cwd(config_file.parent):
         os.environ["REPODOC_OLLAMA_URL"] = "http://env:11434"
         os.environ["REPODOC_MODEL"] = "env-model"
         try:
@@ -105,6 +106,6 @@ def test_invalid_config_file(tmp_path: Path) -> None:
     """
     config = tmp_path / "config.toml"
     config.write_text("invalid toml content")
-    with config.parent.as_cwd():
+    with as_cwd(config.parent):
         with pytest.raises(ConfigurationError, match="Invalid config.toml"):
             load() 
